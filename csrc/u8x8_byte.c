@@ -215,9 +215,10 @@ uint8_t u8x8_byte_8bit_6800mode(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void
 
 uint8_t u8x8_byte_8bit_8080mode(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr)
 {
+  #define GPIOD_PDOR      (*(volatile uint32_t *)0x400FF0C0) // Port Data Output Register
   uint8_t i, b;
   uint8_t *data;
- 
+ #
   switch(msg)
   {
     case U8X8_MSG_BYTE_SEND:
@@ -225,13 +226,17 @@ uint8_t u8x8_byte_8bit_8080mode(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void
       while( arg_int > 0 )
       {
 	b = *data;
-	data++;
-	arg_int--;
-	for( i = U8X8_MSG_GPIO_D0; i <= U8X8_MSG_GPIO_D7; i++ )
-	{
-	  u8x8_gpio_call(u8x8, i, b&1);
-	  b >>= 1;
-	}    
+	//Added by RndMnkIII
+    //GPIOD_PDOR = GPIOD_PDOR | (*data);
+    GPIOD_PDOR = b;
+    data++;
+    arg_int--;
+    // Commented out by RndMnkIII
+    // for( i = U8X8_MSG_GPIO_D0; i <= U8X8_MSG_GPIO_D7; i++ )
+    // {
+      // u8x8_gpio_call(u8x8, i, b&1);
+      // b >>= 1;
+    // }  
 	
 	u8x8_gpio_Delay(u8x8, U8X8_MSG_DELAY_NANO, u8x8->display_info->data_setup_time_ns);
 	u8x8_gpio_call(u8x8, U8X8_MSG_GPIO_E, 0);
